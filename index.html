@@ -218,15 +218,32 @@ function templateStoryboard() {
 }
 
 const blobToB64 = blob => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.readAsDataURL(blob); });
+
+// shrink photos before sending to Gemini → smaller payload → fewer 429s on free tier
+async function shrinkForAI(url, max = 768) {
+  const img = await loadImage(url);
+  const r = Math.min(1, max / Math.max(img.width, img.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+  return { mime: "image/jpeg", b64: c.toDataURL("image/jpeg", 0.8).split(",")[1] };
+}
+
 async function gemini(apiKey, parts, json = false) {
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
-    { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts }],
-        ...(json ? { generationConfig: { responseMimeType: "application/json" } } : {}) }) });
-  if (!res.ok) throw new Error("Gemini " + res.status);
-  const d = await res.json();
-  return d.candidates[0].content.parts[0].text.trim();
+  const body = JSON.stringify({ contents: [{ parts }],
+    ...(json ? { generationConfig: { responseMimeType: "application/json" } } : {}) });
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body });
+    if (res.status === 429 && attempt < 2) {           // rate-limited → wait & retry
+      await new Promise(r => setTimeout(r, 15000 * (attempt + 1)));
+      continue;
+    }
+    if (!res.ok) throw new Error("Gemini " + res.status);
+    const d = await res.json();
+    return d.candidates[0].content.parts[0].text.trim();
+  }
 }
 
 // 📸 photos → professional storyboard (vision, all images at once)
@@ -240,8 +257,8 @@ async function aiStoryboard(key) {
     [{"shotType":"...","description":"one or two short narration sentences","onScreenText":"2-6 word tagline","duration":seconds}]
     Durations must add up to between 30 and 45.` }];
   for (const s of project.scenes) {
-    const img = await fetch(s.url).then(r => r.blob());
-    parts.push({ inline_data: { mime_type: img.type, data: await blobToB64(img) } });
+    const im = await shrinkForAI(s.url);
+    parts.push({ inline_data: { mime_type: im.mime, data: im.b64 } });
   }
   const txt = await gemini(key, parts, true);
   const arr = JSON.parse(txt.match(/\[[\s\S]*\]/)[0]);
@@ -251,13 +268,13 @@ async function aiStoryboard(key) {
     duration: +a.duration || project.scenes[i].duration }); });
 }
 
-//  one photo → better caption (per-scene ✨ button)
+// one photo → better caption (per-scene ✨ button)
 async function aiSceneCaption(key, scene) {
-  const img = await fetch(scene.url).then(r => r.blob());
+  const im = await shrinkForAI(scene.url);
   const txt = await gemini(key, [
     { text: `Product: "${$("#product").value}". For this photo (shot type "${scene.shotType}"), return STRICT JSON:
       {"description":"one or two short narration sentences","onScreenText":"2-6 word tagline"}` },
-    { inline_data: { mime_type: img.type, data: await blobToB64(img) } }], true);
+    { inline_data: { mime_type: im.mime, data: im.b64 } }], true);
   const a = JSON.parse(txt.match(/\{[\s\S]*\}/)[0]);
   scene.description = a.description || scene.description;
   scene.onScreenText = a.onScreenText || scene.onScreenText;
