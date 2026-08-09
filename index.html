@@ -4,9 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Affiliate Video Studio</title>
- <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
-
-<!-- ═══════════════════════ 1. CSS ═══════════════════════ -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
 <style>
   *{box-sizing:border-box}
   body{margin:0;font:15px/1.5 system-ui,sans-serif;background:#0f1020;color:#eef0ff;min-height:100vh}
@@ -16,7 +14,7 @@
   #tabs{display:flex;gap:6px;padding:12px 20px 0}
   #tabs button{flex:1;padding:10px;border:0;border-radius:10px 10px 0 0;cursor:pointer;background:#1b1e3a;color:#9aa0c8;font-weight:600}
   #tabs button.on{background:#6c5ce7;color:#fff}
-  main{padding:20px;max-width:1000px;margin:auto}
+  main{padding:20px;max-width:1100px;margin:auto}
   section{background:#171930;border-radius:0 12px 12px 12px;padding:20px;display:flex;flex-direction:column;gap:14px}
   input,select,textarea{background:#0f1020;color:#eef0ff;border:1px solid #2c2f55;border-radius:8px;padding:9px}
   textarea{width:100%}
@@ -25,10 +23,6 @@
   button.big{font-size:17px;padding:14px}
   button:disabled{opacity:.4;cursor:not-allowed}
   .drop{border:2px dashed #3a3e6e;border-radius:12px;padding:34px;text-align:center;cursor:pointer;color:#9aa0c8}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
-  .scene{background:#0f1020;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px}
-  .scene img{width:100%;aspect-ratio:9/12;object-fit:cover;border-radius:8px}
-  .scene textarea{min-height:64px}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .bar-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
   .progress{height:8px;background:#262a4d;border-radius:4px;overflow:hidden}
@@ -38,11 +32,28 @@
   #uploads .bar{height:4px;background:#6c5ce7;width:0}
   details summary{cursor:pointer;color:#9aa0c8}
   details input{display:block;margin-top:8px;width:100%}
+  /* ── professional storyboard sheet (like your reference) ── */
+  #sheet{background:#f3ede4;color:#191919;border-radius:14px;padding:26px}
+  #sheet .head{display:flex;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+  #sheet h2{font:600 34px Georgia,serif;letter-spacing:3px;margin:0}
+  #sbProduct{font:600 15px Georgia,serif;letter-spacing:3px;margin-top:4px}
+  #sbTag{font:italic 400 13px Georgia,serif;color:#5a5248;margin-top:2px}
+  #sbMeta{text-align:right;font:700 11px system-ui;letter-spacing:1.5px;color:#3c372f;line-height:1.8}
+  #scenes{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px}
+  .scene{display:flex;flex-direction:column;gap:6px}
+  .scene img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:6px}
+  .scene .shot{font:800 12px system-ui;letter-spacing:.4px;display:flex;gap:5px;align-items:baseline;flex-wrap:wrap}
+  .scene .shot input{border:0;background:transparent;font:800 12px system-ui;padding:0;width:120px;text-transform:uppercase;color:#191919}
+  .scene .tc{color:#6b6357;font-weight:700}
+  .scene textarea{background:transparent;border:0;color:#2a251e;font:400 13px/1.45 system-ui;min-height:42px;padding:0;resize:vertical}
+  .scene .ost{font:italic 400 13px Georgia,serif;color:#3c372f}
+  .scene .ost input{border:0;background:transparent;font:italic 600 13px Georgia,serif;width:75%;padding:0;color:#191919}
+  .scene .ctrl{display:flex;gap:6px;align-items:center;margin-top:2px}
+  .scene .ctrl input{width:56px;background:#e6ddcc;border:0;color:#191919;padding:4px}
+  .scene .ctrl button{background:#e0d7c6;color:#191919;padding:4px 9px}
 </style>
 </head>
 <body>
-
-<!-- ═══════════════════════ 2. HTML ═══════════════════════ -->
 <header>
   <h1>🎬 Affiliate Video Studio</h1>
   <select id="projects"></select>
@@ -53,28 +64,42 @@
 <nav id="tabs">
   <button data-step="0" class="on">1 · Pictures</button>
   <button data-step="1">2 · Storyboard</button>
-  <button data-step="2">3 · Script &amp; Voice</button>
+  <button data-step="2">3 · Script & Voice</button>
   <button data-step="3">4 · Export</button>
 </nav>
 
 <main>
   <section id="step-0">
-    <label>Product name <input id="product" placeholder="e.g. AeroPress coffee maker"></label>
-    <label class="drop" for="fileInput">📤 Drop / click product pictures
+    <div class="row">
+      <label>Product name <input id="product" placeholder="e.g. Michaela Comfort Heels"></label>
+      <label>Tagline <input id="tagline" placeholder="e.g. Step into confidence. Every day."></label>
+    </div>
+    <label class="drop" for="fileInput">📤 Drop / click product pictures — the AI storyboard builds itself after upload
       <input id="fileInput" type="file" accept="image/*" multiple hidden></label>
     <div id="uploads"></div>
   </section>
 
   <section id="step-1" hidden>
-    <div class="bar-row"><span id="sceneCount"></span>
-      <button id="autoDur">⏱ Auto-fit durations</button></div>
-    <div id="scenes" class="grid"></div>
+    <div id="sheet">
+      <div class="head">
+        <div><h2>STORYBOARD</h2><div id="sbProduct"></div><div id="sbTag"></div></div>
+        <div id="sbMeta"></div>
+      </div>
+      <div id="scenes"></div>
+    </div>
+    <div class="bar-row">
+      <span id="sceneCount"></span>
+      <div class="row">
+        <button id="autoBoard">✨ Auto-storyboard (AI)</button>
+        <button id="autoDur">⏱ Auto-fit durations</button>
+      </div>
+    </div>
   </section>
 
   <section id="step-2" hidden>
     <div class="bar-row">
       <button id="buildScript">🧱 Script from storyboard</button>
-      <button id="aiScriptBtn">✨ AI script (Gemini)</button>
+      <button id="aiScriptBtn">✨ AI voice-over script (Gemini)</button>
       <button id="previewVoice">🔊 Preview voice</button>
     </div>
     <textarea id="script" rows="8" placeholder="Voice-over script…"></textarea>
@@ -83,7 +108,7 @@
       <label>Rate <input id="rate" type="number" step="0.1" min="0.5" max="2" value="1" style="width:70px"></label>
     </div>
     <details><summary>🔑 Optional AI keys (stored only in your browser)</summary>
-      <input id="geminiKey" type="password" placeholder="Gemini API key (AI captions/script)">
+      <input id="geminiKey" type="password" placeholder="Gemini API key (AI storyboard/script)">
       <input id="openaiKey" type="password" placeholder="OpenAI API key (exportable voice-over)">
     </details>
   </section>
@@ -106,11 +131,8 @@
   </section>
 </main>
 
-<!-- ═══════════════════════ 3. JAVASCRIPT ═══════════════════════ -->
 <script type="module">
-/* ─────────────────────────── CONFIG ───────────────────────────
-   Paste your own values. Until you do, the app runs in LOCAL mode
-   (no cloud) so you can test the full pipeline right away.        */
+/* ═══════════════════════ CONFIG ═══════════════════════ */
 const firebaseConfig = {
   apiKey: "AIzaSyAVpw7oxey1HiJpf8aolt2UrnyP51Nl9lk",
   authDomain: "affiliate-95357.firebaseapp.com",
@@ -126,28 +148,24 @@ const GEMINI_MODEL = "gemini-2.0-flash";
 const HAS_FIREBASE   = !/YOUR_/.test(firebaseConfig.apiKey || "YOUR_");
 const HAS_CLOUDINARY = !/YOUR_/.test(CLOUDINARY.cloudName || "YOUR_");
 
-/* ─────────────────────── FIREBASE (conditional) ─────────────────────── */
+/* ═══════════════════════ FIREBASE ═══════════════════════ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, doc, setDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 let auth = null, db = null;
-if (HAS_FIREBASE) {
-  const app = initializeApp(firebaseConfig);
-  auth = getAuth(app); db = getFirestore(app);
-}
+if (HAS_FIREBASE) { const app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); }
 const ensureAuth = () => HAS_FIREBASE
   ? new Promise(res => onAuthStateChanged(auth, u => u ? res(u) : signInAnonymously(auth).then(r => res(r.user))))
   : Promise.resolve({ uid: "local" });
 
-/* ─────────────────────── CLOUDINARY ─────────────────────── */
+/* ═══════════════════════ CLOUDINARY ═══════════════════════ */
 function uploadToCloudinary(file, onProgress) {
   return new Promise((resolve, reject) => {
     const type = file.type.startsWith("video") ? "video" : "image";
     const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/${type}/upload`;
     const form = new FormData();
-    form.append("file", file);
-    form.append("upload_preset", CLOUDINARY.uploadPreset);
+    form.append("file", file); form.append("upload_preset", CLOUDINARY.uploadPreset);
     const xhr = new XMLHttpRequest();
     xhr.open("POST", url);
     xhr.upload.onprogress = e => onProgress && onProgress(e.loaded / e.total);
@@ -157,80 +175,128 @@ function uploadToCloudinary(file, onProgress) {
   });
 }
 const optimize = url => url.replace("/upload/", "/upload/f_auto,q_auto/");
-async function uploadMedia(file, onProgress) {           // graceful fallback to local blob
+async function uploadMedia(file, onProgress) {
   if (!HAS_CLOUDINARY) { onProgress && onProgress(1); return { secure_url: URL.createObjectURL(file) }; }
   const r = await uploadToCloudinary(file, onProgress);
   r.secure_url = optimize(r.secure_url);
   return r;
 }
 
-/* ─────────────────────── STORYBOARD HELPERS ─────────────────────── */
-function defaultCaption(i) {
-  if (i === 0) return "You need to see this 👀";
-  if (i === 1) return "Here's why it's different";
-  return "Wait for the end…";
-}
-const estimateDuration = t => Math.min(8, Math.max(2.5, String(t).trim().split(/\s+/).length * 0.45 + 1));
+/* ═══════════════════════ STORYBOARD ENGINE ═══════════════════════ */
+const SHOT_ARC = ["Opening Shot","Close-Up","Lifestyle Shot","Work Scene","Everyday Scene","Detail Shot","Hero Shot","End Card"];
+const SHOT_DESC = {
+  "Opening Shot":"Elegant product flat lay.",
+  "Close-Up":"Close-up on premium material and fine stitching.",
+  "Lifestyle Shot":"Model walking confidently. Smooth steps, everyday elegance.",
+  "Work Scene":"Perfect for the office. Comfort that keeps up with you.",
+  "Everyday Scene":"From errands to dinner plans. Versatile. Reliable. Beautiful.",
+  "Detail Shot":"Sturdy block heel for stability and all-day support.",
+  "Hero Shot":"The perfect blend of style and comfort. Made for women who do it all.",
+  "End Card":"Brand logo and tagline. Call to action."
+};
+const SHOT_OST = {
+  "Opening Shot":"Elegance in Every Step.",
+  "Close-Up":"Premium. Refined. Timeless.",
+  "Lifestyle Shot":"Made for Every Moment.",
+  "Work Scene":"All-Day Comfort.",
+  "Everyday Scene":"Your Go-To Heels.",
+  "Detail Shot":"Steady. Strong. Stylish.",
+  "Hero Shot":"",          // filled with product name
+  "End Card":"Shop Now."
+};
+const SHOT_DUR = { "Opening Shot":3,"Close-Up":4,"Lifestyle Shot":6,"Work Scene":6,"Everyday Scene":6,"Detail Shot":5,"Hero Shot":7,"End Card":8 };
 
-/* ─────────────────────── SCRIPT / AI ─────────────────────── */
-function buildScript(scenes, product) {
-  const p = product || "this product";
-  return [
-    `Okay so I found ${p} and it's actually worth the hype.`,
-    scenes.map(s => s.caption).join(" "),
-    `My affiliate link is in the bio — using it supports the channel at no extra cost to you.`
-  ].join("\n");
+function templateStoryboard() {
+  const n = project.scenes.length, middle = SHOT_ARC.slice(1, -1);
+  project.scenes.forEach((s, i) => {
+    const type = i === 0 ? "Opening Shot" : i === n - 1 ? "End Card" : middle[(i - 1) % middle.length];
+    s.shotType = type;
+    s.description = SHOT_DESC[type];
+    s.onScreenText = type === "Hero Shot" ? ($("#product").value || "The Perfect Pair.") : SHOT_OST[type];
+    s.duration = SHOT_DUR[type];
+  });
 }
+
 const blobToB64 = blob => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.readAsDataURL(blob); });
-async function gemini(apiKey, parts) {
+async function gemini(apiKey, parts, json = false) {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
     { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts }] }) });
+      body: JSON.stringify({ contents: [{ parts }],
+        ...(json ? { generationConfig: { responseMimeType: "application/json" } } : {}) }) });
   if (!res.ok) throw new Error("Gemini " + res.status);
   const d = await res.json();
   return d.candidates[0].content.parts[0].text.trim();
 }
-async function aiSceneCaption(apiKey, imageUrl, product) {
-  const img = await fetch(imageUrl).then(r => r.blob());
-  return gemini(apiKey, [
-    { text: `Write ONE punchy 8–12 word on-screen caption for this ${product || "product"} photo for a short affiliate video. Plain text, no quotes.` },
-    { inline_data: { mime_type: img.type, data: await blobToB64(img) } }
-  ]);
-}
-async function aiScript(apiKey, scenes, product) {
-  const board = scenes.map((s, i) => `${i + 1}. ${s.caption}`).join("\n");
-  return gemini(apiKey, [{ text:
-    `You write viral short-form affiliate video scripts. Product: ${product || "unknown"}.\n` +
-    `Storyboard captions:\n${board}\n\n` +
-    `Write a natural 60–90 word voice-over script: strong hook, benefits, and end with a CTA ` +
-    `plus a clear affiliate disclosure. Plain text only.` }]);
+
+// 📸 photos → professional storyboard (vision, all images at once)
+async function aiStoryboard(key) {
+  const n = project.scenes.length;
+  const parts = [{ text:
+    `You are an award-winning commercial storyboard artist. Product: "${$("#product").value}". Tagline: "${$("#tagline").value}".
+    I give you ${n} product photos IN ORDER. Build a 30-45 second promo storyboard using EVERY photo in the given order.
+    Arc: first "Opening Shot", last "End Card", middle a mix of "Close-Up","Lifestyle Shot","Work Scene","Everyday Scene","Detail Shot","Hero Shot".
+    Return STRICT JSON: an array with exactly ${n} objects, one per photo, in order:
+    [{"shotType":"...","description":"one or two short narration sentences","onScreenText":"2-6 word tagline","duration":seconds}]
+    Durations must add up to between 30 and 45.` }];
+  for (const s of project.scenes) {
+    const img = await fetch(s.url).then(r => r.blob());
+    parts.push({ inline_data: { mime_type: img.type, data: await blobToB64(img) } });
+  }
+  const txt = await gemini(key, parts, true);
+  const arr = JSON.parse(txt.match(/\[[\s\S]*\]/)[0]);
+  arr.forEach((a, i) => { if (project.scenes[i]) Object.assign(project.scenes[i], {
+    shotType: a.shotType || project.scenes[i].shotType,
+    description: a.description || "", onScreenText: a.onScreenText || "",
+    duration: +a.duration || project.scenes[i].duration }); });
 }
 
-/* ─────────────────────── VOICE-OVER ─────────────────────── */
+//  one photo → better caption (per-scene ✨ button)
+async function aiSceneCaption(key, scene) {
+  const img = await fetch(scene.url).then(r => r.blob());
+  const txt = await gemini(key, [
+    { text: `Product: "${$("#product").value}". For this photo (shot type "${scene.shotType}"), return STRICT JSON:
+      {"description":"one or two short narration sentences","onScreenText":"2-6 word tagline"}` },
+    { inline_data: { mime_type: img.type, data: await blobToB64(img) } }], true);
+  const a = JSON.parse(txt.match(/\{[\s\S]*\}/)[0]);
+  scene.description = a.description || scene.description;
+  scene.onScreenText = a.onScreenText || scene.onScreenText;
+}
+
+/* ═══════════════════════ SCRIPT / VOICE ═══════════════════════ */
+function buildScript(scenes, product, tagline) {
+  const p = product || "this product";
+  const lines = [`Introducing ${p}${tagline ? " — " + tagline : ""}.`];
+  scenes.forEach(s => { if (!/end\s?card/i.test(s.shotType)) lines.push(s.description); });
+  lines.push(`Shop now — link in bio. Using my affiliate link supports the channel at no extra cost to you.`);
+  return lines.join("\n");
+}
+async function aiScript(key, scenes, product) {
+  const board = scenes.map((s, i) => `${i + 1}. [${s.shotType}] ${s.description} | on screen: "${s.onScreenText}"`).join("\n");
+  return gemini(key, [{ text:
+    `You write viral 30-45s commercial voice-overs. Product: ${product || "unknown"}.\nStoryboard:\n${board}\n\n` +
+    `Write a natural voice-over script matching the scenes in order. End with a CTA + clear affiliate disclosure. Plain text only.` }]);
+}
 function speak(text, { voiceURI, rate = 1 } = {}) {
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   const v = speechSynthesis.getVoices().find(v => v.voiceURI === voiceURI);
   if (v) u.voice = v;
-  u.rate = rate;
-  speechSynthesis.speak(u);
+  u.rate = rate; speechSynthesis.speak(u);
 }
 const stopSpeaking = () => speechSynthesis.cancel();
 async function openaiTTS(text, apiKey, voice = "alloy") {
   const res = await fetch("https://api.openai.com/v1/audio/speech", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: "tts-1", voice, input: text })
-  });
+    method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "tts-1", voice, input: text }) });
   if (!res.ok) throw new Error("TTS " + res.status);
   return res.blob();
 }
 
-/* ─────────────────────── VIDEO RENDERER ─────────────────────── */
+/* ═══════════════════════ VIDEO RENDERER ═══════════════════════ */
 const loadImage = src => new Promise((res, rej) => {
   const i = new Image();
-  if (/^https?:/.test(src)) i.crossOrigin = "anonymous";   // Cloudinary needs CORS; local blobs don't
+  if (/^https?:/.test(src)) i.crossOrigin = "anonymous";
   i.onload = () => res(i); i.onerror = rej; i.src = src;
 });
 const pickMime = () => ["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"]
@@ -263,13 +329,9 @@ async function renderVideo(project, { aspect = "9:16", audioBlob = null, useMic 
   if (audioBlob) {
     src = ac.createBufferSource();
     src.buffer = await ac.decodeAudioData(await audioBlob.arrayBuffer());
-    src.connect(dest);
-    if (!useMic) src.connect(ac.destination);
+    src.connect(dest); if (!useMic) src.connect(ac.destination);
   }
-  if (useMic) {
-    mic = await navigator.mediaDevices.getUserMedia({ audio: true });
-    ac.createMediaStreamSource(mic).connect(dest);
-  }
+  if (useMic) { mic = await navigator.mediaDevices.getUserMedia({ audio: true }); ac.createMediaStreamSource(mic).connect(dest); }
 
   const stream = canvas.captureStream(30);
   dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
@@ -280,7 +342,6 @@ async function renderVideo(project, { aspect = "9:16", audioBlob = null, useMic 
   const stopped = new Promise(r => rec.onstop = r);
 
   function draw(t) {
-    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
     let acc = 0, idx = project.scenes.length - 1, local = 0;
     for (let i = 0; i < project.scenes.length; i++) {
       const d = +project.scenes[i].duration || 3;
@@ -288,28 +349,37 @@ async function renderVideo(project, { aspect = "9:16", audioBlob = null, useMic 
       acc += d;
     }
     const s = project.scenes[idx];
-    drawCover(ctx, imgs[idx], W, H, 1.05 + 0.07 * (local / s.duration));   // Ken Burns
-    const g = ctx.createLinearGradient(0, H * .5, 0, H);
-    g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.88)");
-    ctx.fillStyle = g; ctx.fillRect(0, H * .5, W, H * .5);
+
+    if (/end\s?card/i.test(s.shotType || "")) {                       // ── brand end card
+      ctx.fillStyle = "#f3ede4"; ctx.fillRect(0, 0, W, H);
+      ctx.textAlign = "center"; ctx.fillStyle = "#191919";
+      ctx.font = `500 ${W * .085}px Georgia, serif`;
+      wrap(ctx, (project.product || "YOUR PRODUCT").toUpperCase(), W / 2, H * .42, W * .82, W * .105);
+      ctx.font = `italic 400 ${W * .042}px Georgia, serif`; ctx.fillStyle = "#5a5248";
+      ctx.fillText(project.tagline || s.onScreenText, W / 2, H * .52);
+      const bw = W * .5, bh = W * .085;
+      ctx.strokeStyle = "#191919"; ctx.lineWidth = 3;
+      ctx.strokeRect((W - bw) / 2, H * .62, bw, bh);
+      ctx.fillStyle = "#191919"; ctx.font = `700 ${W * .035}px system-ui`; ctx.textBaseline = "middle";
+      ctx.fillText("S H O P   N O W", W / 2, H * .62 + bh / 2); ctx.textBaseline = "alphabetic";
+      ctx.font = `600 ${W * .026}px system-ui`; ctx.fillStyle = "#6b6357";
+      ctx.fillText("link in bio  •  #ad", W / 2, H * .62 + bh + W * .06);
+    } else {                                                          // ── normal scene
+      ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+      drawCover(ctx, imgs[idx], W, H, 1.05 + 0.07 * (local / s.duration));
+      const g = ctx.createLinearGradient(0, H * .5, 0, H);
+      g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.88)");
+      ctx.fillStyle = g; ctx.fillRect(0, H * .5, W, H * .5);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      ctx.font = `700 ${W * .032}px system-ui`;
+      ctx.fillText(`${String(idx + 1).padStart(2, "0")} · ${(s.shotType || "").toUpperCase()}`, W / 2, H * .055);
+      ctx.fillStyle = "#fff";
+      ctx.font = `italic 700 ${W * .066}px Georgia, serif`;
+      wrap(ctx, s.onScreenText || s.description, W / 2, H * .84, W * .86, W * .085);
+    }
     ctx.fillStyle = "rgba(255,255,255,.25)"; ctx.fillRect(0, 0, W, 10);
     ctx.fillStyle = "#ffd166"; ctx.fillRect(0, 0, W * (t / total), 10);
-    ctx.textAlign = "center";
-    ctx.fillStyle = "rgba(255,255,255,.9)";
-    ctx.font = `600 ${W * .034}px system-ui, sans-serif`;
-    ctx.fillText(`${idx + 1} / ${project.scenes.length}`, W / 2, H * .055);
-    ctx.fillStyle = "#fff";
-    ctx.font = `800 ${W * .062}px system-ui, sans-serif`;
-    wrap(ctx, s.caption, W / 2, H * .84, W * .86, W * .082);
-    if (idx === project.scenes.length - 1) {
-      const txt = "🔗 Link in bio  •  #ad";
-      ctx.font = `700 ${W * .04}px system-ui`;
-      const w = ctx.measureText(txt).width + W * .07, h = W * .08;
-      ctx.fillStyle = "rgba(255,209,102,.96)";
-      ctx.beginPath(); ctx.roundRect((W - w) / 2, H * .70, w, h, h / 2); ctx.fill();
-      ctx.fillStyle = "#111"; ctx.textBaseline = "middle";
-      ctx.fillText(txt, W / 2, H * .70 + h / 2); ctx.textBaseline = "alphabetic";
-    }
   }
 
   rec.start(250); src && src.start();
@@ -329,17 +399,18 @@ async function renderVideo(project, { aspect = "9:16", audioBlob = null, useMic 
   return new Blob(chunks, { type: mime || "video/webm" });
 }
 
-/* ─────────────────────── APP STATE + UI ─────────────────────── */
+/* ═══════════════════════ APP / UI ═══════════════════════ */
 const $ = s => document.querySelector(s);
-const newProject = () => ({ id: crypto.randomUUID(),
-  title: "Video " + new Date().toLocaleDateString(), scenes: [], script: "", videoUrl: "" });
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+const fmt = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}`;
+const newProject = () => ({ id: crypto.randomUUID(), title: "Video " + new Date().toLocaleDateString(),
+  product: "", tagline: "", scenes: [], script: "", videoUrl: "" });
 let user, cache = [], project = newProject(), lastBlob = null, lastURL = null;
 
 init();
 async function init() {
   $("#status").textContent =
-    (HAS_FIREBASE ? "🔥 Firebase ✓" : "🔥 local-only (add config to save)") + "  ·  " +
-    (HAS_CLOUDINARY ? "☁️ Cloudinary ✓" : "☁️ local media (add config to host)");
+    (HAS_FIREBASE ? "🔥 Firebase ✓" : "🔥 local-only") + "  ·  " + (HAS_CLOUDINARY ? "☁️ Cloudinary ✓" : "☁️ local media");
   user = await ensureAuth();
   ["geminiKey", "openaiKey"].forEach(k => {
     $("#" + k).value = localStorage.getItem(k) || "";
@@ -351,10 +422,16 @@ async function init() {
   speechSynthesis.onvoiceschanged = fill; fill();
 }
 
+function gotoStep(n) {
+  document.querySelectorAll("#tabs button").forEach((x, i) => x.classList.toggle("on", i === n));
+  for (let i = 0; i < 4; i++) $("#step-" + i).hidden = i !== n;
+  if (n === 2 && !$("#script").value.trim()) { $("#script").value = buildScript(project.scenes, project.product, project.tagline); project.script = $("#script").value; }
+}
+
 function bind() {
-  $("#tabs").onclick = e => { const b = e.target.closest("button"); if (!b) return;
-    document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
-    for (let i = 0; i < 4; i++) $("#step-" + i).hidden = i !== +b.dataset.step; };
+  $("#tabs").onclick = e => { const b = e.target.closest("button"); if (b) gotoStep(+b.dataset.step); };
+  $("#product").oninput = e => { project.product = e.target.value; $("#sbProduct").textContent = (e.target.value || "YOUR PRODUCT").toUpperCase(); };
+  $("#tagline").oninput = e => { project.tagline = e.target.value; $("#sbTag").textContent = e.target.value; };
 
   $("#fileInput").onchange = async e => {
     for (const f of [...e.target.files]) {
@@ -363,16 +440,21 @@ function bind() {
       $("#uploads").appendChild(card);
       try {
         const r = await uploadMedia(f, p => card.querySelector(".bar").style.width = p * 100 + "%");
-        project.scenes.push({ url: r.secure_url, caption: defaultCaption(project.scenes.length), duration: 3 });
+        project.scenes.push({ url: r.secure_url, shotType: "", description: "", onScreenText: "", duration: 4 });
       } catch (err) { alert("Upload failed: " + err.message); }
       card.remove();
     }
-    renderBoard();
+    await makeStoryboard();
+    gotoStep(1);
   };
+
+  $("#autoBoard").onclick = () => makeStoryboard(true);
+  $("#autoDur").onclick = () => { project.scenes.forEach(s => s.duration = +Math.min(8, Math.max(2.5, s.description.split(/\s+/).length * .45 + 1)).toFixed(1)); renderBoard(); };
 
   $("#scenes").oninput = e => { const k = e.target.dataset.k; if (!k) return;
     const s = project.scenes[e.target.closest(".scene").dataset.i];
-    s[k] = k === "duration" ? parseFloat(e.target.value) || 3 : e.target.value; };
+    s[k] = k === "duration" ? parseFloat(e.target.value) || 3 : e.target.value;
+    if (k !== "duration") renderBoardHead(); };
 
   $("#scenes").onclick = async e => {
     const b = e.target.closest("button"); if (!b) return;
@@ -383,14 +465,12 @@ function bind() {
     if (a === "ai") { const key = $("#geminiKey").value.trim();
       if (!key) return alert("Add your free Gemini key in step 3 first.");
       b.disabled = true;
-      try { S[i].caption = await aiSceneCaption(key, S[i].url, $("#product").value); }
-      catch (err) { alert(err.message); }
+      try { await aiSceneCaption(key, S[i]); } catch (err) { alert(err.message); }
       b.disabled = false; }
     renderBoard();
   };
 
-  $("#autoDur").onclick = () => { project.scenes.forEach(s => s.duration = +estimateDuration(s.caption).toFixed(1)); renderBoard(); };
-  $("#buildScript").onclick = () => { $("#script").value = buildScript(project.scenes, $("#product").value); project.script = $("#script").value; };
+  $("#buildScript").onclick = () => { $("#script").value = buildScript(project.scenes, project.product, project.tagline); project.script = $("#script").value; };
   $("#aiScriptBtn").onclick = async () => { const key = $("#geminiKey").value.trim();
     if (!key) return alert("Gemini key needed.");
     try { $("#script").value = await aiScript(key, project.scenes, $("#product").value); project.script = $("#script").value; }
@@ -426,36 +506,56 @@ function bind() {
 
   $("#save").onclick = save;
   $("#projects").onchange = e => {
-    project = e.target.value === "new" ? newProject()
-      : structuredClone(cache.find(p => p.id === e.target.value));
+    project = e.target.value === "new" ? newProject() : structuredClone(cache.find(p => p.id === e.target.value));
     syncUI();
   };
 }
 
-function renderBoard() {
-  const w = $("#scenes"); w.innerHTML = "";
-  project.scenes.forEach((s, i) => {
-    const el = document.createElement("div");
-    el.className = "scene"; el.dataset.i = i;
-    el.innerHTML = `<img src="${s.url}" alt=""><textarea data-k="caption">${s.caption}</textarea>
-      <div class="row"><label>s <input type="number" min="1" max="15" step="0.5"
-      data-k="duration" value="${s.duration}" style="width:64px"></label>
-      <button data-a="ai" title="AI caption">✨</button><button data-a="up">↑</button>
-      <button data-a="down">↓</button><button data-a="del">✕</button></div>`;
-    w.appendChild(el);
-  });
+async function makeStoryboard(force) {
+  const key = $("#geminiKey").value.trim();
+  if (key) { try { await aiStoryboard(key); } catch (err) { alert("AI storyboard failed, using template: " + err.message); templateStoryboard(); } }
+  else templateStoryboard();
+  renderBoard();
+}
+
+function renderBoardHead() {
+  $("#sbProduct").textContent = (project.product || "YOUR PRODUCT").toUpperCase();
+  $("#sbTag").textContent = project.tagline || "";
+  const total = project.scenes.reduce((a, s) => a + (+s.duration || 3), 0);
+  $("#sbMeta").innerHTML = `DURATION: ${Math.round(total)} SECONDS<br>FORMAT: COMMERCIAL / PROMO`;
   $("#sceneCount").textContent = project.scenes.length + " scenes";
 }
 
-function syncUI() { $("#product").value = project.product || ""; $("#script").value = project.script || ""; renderBoard(); }
+function renderBoard() {
+  renderBoardHead();
+  const grid = $("#scenes"); grid.innerHTML = "";
+  let acc = 0;
+  project.scenes.forEach((s, i) => {
+    const start = fmt(acc), end = fmt(acc + (+s.duration || 3)); acc += +s.duration || 3;
+    const el = document.createElement("div");
+    el.className = "scene"; el.dataset.i = i;
+    el.innerHTML = `<img src="${s.url}" alt="">
+      <div class="shot"><span>${String(i + 1).padStart(2, "0")}.</span>
+        <input data-k="shotType" value="${esc(s.shotType)}"><span class="tc">(${start}–${end})</span></div>
+      <textarea data-k="description">${esc(s.description)}</textarea>
+      <div class="ost">Text on screen: "<input data-k="onScreenText" value="${esc(s.onScreenText)}">"</div>
+      <div class="ctrl"><input type="number" min="1" max="15" step="0.5" data-k="duration" value="${s.duration}">s
+        <button data-a="ai" title="AI rewrite">✨</button><button data-a="up">↑</button>
+        <button data-a="down">↓</button><button data-a="del">✕</button></div>`;
+    grid.appendChild(el);
+  });
+}
 
+function syncUI() {
+  $("#product").value = project.product || ""; $("#tagline").value = project.tagline || "";
+  $("#script").value = project.script || ""; renderBoard();
+}
 function renderProjectsSelect() {
   $("#projects").innerHTML = cache.map(p => `<option value="${p.id}">${p.title}</option>`).join("")
     + `<option value="new">＋ New project</option>`;
 }
-
 async function save() {
-  project.product = $("#product").value; project.script = $("#script").value;
+  project.product = $("#product").value; project.tagline = $("#tagline").value; project.script = $("#script").value;
   if (!HAS_FIREBASE) {
     project.updatedAt = Date.now();
     cache = [project, ...cache.filter(p => p.id !== project.id)];
@@ -465,7 +565,6 @@ async function save() {
   await setDoc(doc(db, "projects", project.id), { ...project, uid: user.uid, updatedAt: serverTimestamp() });
   loadProjects();
 }
-
 async function loadProjects() {
   if (!HAS_FIREBASE) {
     try { cache = JSON.parse(localStorage.getItem("avs_projects") || "[]"); } catch { cache = []; }
