@@ -229,21 +229,38 @@ async function shrinkForAI(url, max = 768) {
   return { mime: "image/jpeg", b64: c.toDataURL("image/jpeg", 0.8).split(",")[1] };
 }
 
+const PREF_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-1.5-flash"];
+let cachedModel = null;
+async function pickModel(key) {                      // ask Google which models this key can use
+  if (cachedModel) return cachedModel;
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}&pageSize=100`);
+    if (r.ok) {
+      const names = ((await r.json()).models || []).map(m => m.name.replace("models/", ""));
+      const hit = PREF_MODELS.find(p => names.includes(p)) || names.find(n => n.includes("flash") && !n.includes("preview"));
+      if (hit) return (cachedModel = hit);
+    }
+  } catch {}
+  return (cachedModel = PREF_MODELS[0]);
+}
+
 async function gemini(apiKey, parts, json = false) {
   const body = JSON.stringify({ contents: [{ parts }],
     ...(json ? { generationConfig: { responseMimeType: "application/json" } } : {}) });
-  for (let attempt = 0; ; attempt++) {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
-      { method: "POST", headers: { "Content-Type": "application/json" }, body });
-    if (res.status === 429 && attempt < 2) {           // rate-limited → wait & retry
-      await new Promise(r => setTimeout(r, 15000 * (attempt + 1)));
-      continue;
+  let lastErr = "";
+  for (const m of [...new Set([await pickModel(apiKey), ...PREF_MODELS])]) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body });
+      if (res.ok) { cachedModel = m; const d = await res.json(); return d.candidates[0].content.parts[0].text.trim(); }
+      const j = await res.json().catch(() => null);
+      lastErr = `Gemini ${res.status} on ${m} — ${j?.error?.message || res.statusText}`;
+      if (res.status === 429) { await new Promise(r => setTimeout(r, 10000)); continue; }  // quota → wait 10s, retry
+      break;                                                                                // 404/403 → try next model
     }
-    if (!res.ok) throw new Error("Gemini " + res.status);
-    const d = await res.json();
-    return d.candidates[0].content.parts[0].text.trim();
   }
+  throw new Error(lastErr || "Gemini failed");
 }
 
 // 📸 photos → professional storyboard (vision, all images at once)
