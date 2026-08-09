@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Affiliate Video Studio</title>
+
+<!-- ═══════════════════════ 1. CSS ═══════════════════════ -->
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 system-ui,sans-serif;background:#0f1020;color:#eef0ff;min-height:100vh}
+  header{display:flex;gap:10px;align-items:center;padding:14px 20px;background:#171930;position:sticky;top:0;z-index:2;flex-wrap:wrap}
+  h1{font-size:18px;margin:0 auto 0 0}
+  #status{font-size:12px;color:#8b90b8;width:100%;padding-top:2px}
+  #tabs{display:flex;gap:6px;padding:12px 20px 0}
+  #tabs button{flex:1;padding:10px;border:0;border-radius:10px 10px 0 0;cursor:pointer;background:#1b1e3a;color:#9aa0c8;font-weight:600}
+  #tabs button.on{background:#6c5ce7;color:#fff}
+  main{padding:20px;max-width:1000px;margin:auto}
+  section{background:#171930;border-radius:0 12px 12px 12px;padding:20px;display:flex;flex-direction:column;gap:14px}
+  input,select,textarea{background:#0f1020;color:#eef0ff;border:1px solid #2c2f55;border-radius:8px;padding:9px}
+  textarea{width:100%}
+  button{background:#262a4d;color:#eef0ff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:600}
+  button.primary{background:#6c5ce7;color:#fff}
+  button.big{font-size:17px;padding:14px}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .drop{border:2px dashed #3a3e6e;border-radius:12px;padding:34px;text-align:center;cursor:pointer;color:#9aa0c8}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .scene{background:#0f1020;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px}
+  .scene img{width:100%;aspect-ratio:9/12;object-fit:cover;border-radius:8px}
+  .scene textarea{min-height:64px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .bar-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .progress{height:8px;background:#262a4d;border-radius:4px;overflow:hidden}
+  #progress{height:100%;width:0;background:#ffd166;transition:width .2s}
+  video{width:100%;max-height:60vh;background:#000;border-radius:10px}
+  #uploads .card{display:inline-block;margin:4px;font-size:12px}
+  #uploads .bar{height:4px;background:#6c5ce7;width:0}
+  details summary{cursor:pointer;color:#9aa0c8}
+  details input{display:block;margin-top:8px;width:100%}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ 2. HTML ═══════════════════════ -->
+<header>
+  <h1>🎬 Affiliate Video Studio</h1>
+  <select id="projects"></select>
+  <button id="save" class="primary">💾 Save</button>
+  <div id="status"></div>
+</header>
+
+<nav id="tabs">
+  <button data-step="0" class="on">1 · Pictures</button>
+  <button data-step="1">2 · Storyboard</button>
+  <button data-step="2">3 · Script &amp; Voice</button>
+  <button data-step="3">4 · Export</button>
+</nav>
+
+<main>
+  <section id="step-0">
+    <label>Product name <input id="product" placeholder="e.g. AeroPress coffee maker"></label>
+    <label class="drop" for="fileInput">📤 Drop / click product pictures
+      <input id="fileInput" type="file" accept="image/*" multiple hidden></label>
+    <div id="uploads"></div>
+  </section>
+
+  <section id="step-1" hidden>
+    <div class="bar-row"><span id="sceneCount"></span>
+      <button id="autoDur">⏱ Auto-fit durations</button></div>
+    <div id="scenes" class="grid"></div>
+  </section>
+
+  <section id="step-2" hidden>
+    <div class="bar-row">
+      <button id="buildScript">🧱 Script from storyboard</button>
+      <button id="aiScriptBtn">✨ AI script (Gemini)</button>
+      <button id="previewVoice">🔊 Preview voice</button>
+    </div>
+    <textarea id="script" rows="8" placeholder="Voice-over script…"></textarea>
+    <div class="row">
+      <select id="voice"></select>
+      <label>Rate <input id="rate" type="number" step="0.1" min="0.5" max="2" value="1" style="width:70px"></label>
+    </div>
+    <details><summary>🔑 Optional AI keys (stored only in your browser)</summary>
+      <input id="geminiKey" type="password" placeholder="Gemini API key (AI captions/script)">
+      <input id="openaiKey" type="password" placeholder="OpenAI API key (exportable voice-over)">
+    </details>
+  </section>
+
+  <section id="step-3" hidden>
+    <div class="row">
+      <label>Format <select id="aspect"><option value="9:16">9:16 Shorts/Reels</option>
+        <option value="16:9">16:9 YouTube</option></select></label>
+      <label>Voice-over <select id="audioSource">
+        <option value="none">None</option><option value="tts">OpenAI TTS</option>
+        <option value="file">Audio file</option><option value="mic">Record mic live</option></select></label>
+      <select id="ttsVoice"><option>alloy</option><option>nova</option><option>echo</option>
+        <option>fable</option><option>onyx</option><option>shimmer</option></select>
+      <input id="voiceFile" type="file" accept="audio/*">
+    </div>
+    <button id="render" class="primary big">🎥 Render video</button>
+    <div class="progress"><div id="progress"></div></div>
+    <video id="preview" controls></video>
+    <button id="uploadVideo" disabled>☁️ Upload video to Cloudinary + save</button>
+  </section>
+</main>
+
+<!-- ═══════════════════════ 3. JAVASCRIPT ═══════════════════════ -->
+<script type="module">
+/* ─────────────────────────── CONFIG ───────────────────────────
+   Paste your own values. Until you do, the app runs in LOCAL mode
+   (no cloud) so you can test the full pipeline right away.        */
+const firebaseConfig = {
+  apiKey: "AIzaSyAVpw7oxey1HiJpf8aolt2UrnyP51Nl9lk",
+  authDomain: "affiliate-95357.firebaseapp.com",
+  projectId: "affiliate-95357",
+  storageBucket: "affiliate-95357.firebasestorage.app",
+  messagingSenderId: "469465402857",
+  appId: "1:469465402857:web:39aa150718cb2c428c4f78",
+  measurementId: "G-N6DMP5HPN8"
+};
+const CLOUDINARY = { cloudName: "ddfuet1q", uploadPreset: "affiliate_materials" };
+const GEMINI_MODEL = "gemini-2.5-flash";
+
+const HAS_FIREBASE   = !/YOUR_/.test(firebaseConfig.apiKey || "YOUR_");
+const HAS_CLOUDINARY = !/YOUR_/.test(CLOUDINARY.cloudName || "YOUR_");
+
+/* ─────────────────────── FIREBASE (conditional) ─────────────────────── */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+let auth = null, db = null;
+if (HAS_FIREBASE) {
+  const app = initializeApp(firebaseConfig);
+  auth = getAuth(app); db = getFirestore(app);
+}
+const ensureAuth = () => HAS_FIREBASE
+  ? new Promise(res => onAuthStateChanged(auth, u => u ? res(u) : signInAnonymously(auth).then(r => res(r.user))))
+  : Promise.resolve({ uid: "local" });
+
+/* ─────────────────────── CLOUDINARY ─────────────────────── */
+function uploadToCloudinary(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const type = file.type.startsWith("video") ? "video" : "image";
+    const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/${type}/upload`;
+    const form = new FormData();
+    form.append("file", file);
+    form.append("upload_preset", CLOUDINARY.uploadPreset);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.upload.onprogress = e => onProgress && onProgress(e.loaded / e.total);
+    xhr.onload = () => xhr.status < 300 ? resolve(JSON.parse(xhr.responseText)) : reject(new Error(xhr.statusText));
+    xhr.onerror = () => reject(new Error("Upload failed"));
+    xhr.send(form);
+  });
+}
+const optimize = url => url.replace("/upload/", "/upload/f_auto,q_auto/");
+async function uploadMedia(file, onProgress) {           // graceful fallback to local blob
+  if (!HAS_CLOUDINARY) { onProgress && onProgress(1); return { secure_url: URL.createObjectURL(file) }; }
+  const r = await uploadToCloudinary(file, onProgress);
+  r.secure_url = optimize(r.secure_url);
+  return r;
+}
+
+/* ─────────────────────── STORYBOARD HELPERS ─────────────────────── */
+function defaultCaption(i) {
+  if (i === 0) return "You need to see this 👀";
+  if (i === 1) return "Here's why it's different";
+  return "Wait for the end…";
+}
+const estimateDuration = t => Math.min(8, Math.max(2.5, String(t).trim().split(/\s+/).length * 0.45 + 1));
+
+/* ─────────────────────── SCRIPT / AI ─────────────────────── */
+function buildScript(scenes, product) {
+  const p = product || "this product";
+  return [
+    `Okay so I found ${p} and it's actually worth the hype.`,
+    scenes.map(s => s.caption).join(" "),
+    `My affiliate link is in the bio — using it supports the channel at no extra cost to you.`
+  ].join("\n");
+}
+const blobToB64 = blob => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.readAsDataURL(blob); });
+async function gemini(apiKey, parts) {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`,
+    { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts }] }) });
+  if (!res.ok) throw new Error("Gemini " + res.status);
+  const d = await res.json();
+  return d.candidates[0].content.parts[0].text.trim();
+}
+async function aiSceneCaption(apiKey, imageUrl, product) {
+  const img = await fetch(imageUrl).then(r => r.blob());
+  return gemini(apiKey, [
+    { text: `Write ONE punchy 8–12 word on-screen caption for this ${product || "product"} photo for a short affiliate video. Plain text, no quotes.` },
+    { inline_data: { mime_type: img.type, data: await blobToB64(img) } }
+  ]);
+}
+async function aiScript(apiKey, scenes, product) {
+  const board = scenes.map((s, i) => `${i + 1}. ${s.caption}`).join("\n");
+  return gemini(apiKey, [{ text:
+    `You write viral short-form affiliate video scripts. Product: ${product || "unknown"}.\n` +
+    `Storyboard captions:\n${board}\n\n` +
+    `Write a natural 60–90 word voice-over script: strong hook, benefits, and end with a CTA ` +
+    `plus a clear affiliate disclosure. Plain text only.` }]);
+}
+
+/* ─────────────────────── VOICE-OVER ─────────────────────── */
+function speak(text, { voiceURI, rate = 1 } = {}) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = speechSynthesis.getVoices().find(v => v.voiceURI === voiceURI);
+  if (v) u.voice = v;
+  u.rate = rate;
+  speechSynthesis.speak(u);
+}
+const stopSpeaking = () => speechSynthesis.cancel();
+async function openaiTTS(text, apiKey, voice = "alloy") {
+  const res = await fetch("https://api.openai.com/v1/audio/speech", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: "tts-1", voice, input: text })
+  });
+  if (!res.ok) throw new Error("TTS " + res.status);
+  return res.blob();
+}
+
+/* ─────────────────────── VIDEO RENDERER ─────────────────────── */
+const loadImage = src => new Promise((res, rej) => {
+  const i = new Image();
+  if (/^https?:/.test(src)) i.crossOrigin = "anonymous";   // Cloudinary needs CORS; local blobs don't
+  i.onload = () => res(i); i.onerror = rej; i.src = src;
+});
+const pickMime = () => ["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm","video/mp4"]
+  .find(m => MediaRecorder.isTypeSupported(m)) || "";
+function drawCover(ctx, img, W, H, zoom = 1) {
+  const r = Math.max(W / img.width, H / img.height) * zoom;
+  const w = img.width * r, h = img.height * r;
+  ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+}
+function wrap(ctx, text, x, y, maxW, lh) {
+  let line = "";
+  for (const w of String(text).split(/\s+/)) {
+    const t = line ? line + " " + w : w;
+    if (ctx.measureText(t).width > maxW && line) { ctx.fillText(line, x, y); y += lh; line = w; }
+    else line = t;
+  }
+  if (line) ctx.fillText(line, x, y);
+}
+async function renderVideo(project, { aspect = "9:16", audioBlob = null, useMic = false, onProgress } = {}) {
+  const [W, H] = aspect === "9:16" ? [1080, 1920] : [1920, 1080];
+  const canvas = Object.assign(document.createElement("canvas"), { width: W, height: H });
+  const ctx = canvas.getContext("2d");
+  const imgs = await Promise.all(project.scenes.map(s => loadImage(s.url)));
+  const total = project.scenes.reduce((a, s) => a + (+s.duration || 3), 0);
+
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const ac = new AC(); await ac.resume();
+  const dest = ac.createMediaStreamDestination();
+  let src = null, mic = null;
+  if (audioBlob) {
+    src = ac.createBufferSource();
+    src.buffer = await ac.decodeAudioData(await audioBlob.arrayBuffer());
+    src.connect(dest);
+    if (!useMic) src.connect(ac.destination);
+  }
+  if (useMic) {
+    mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+    ac.createMediaStreamSource(mic).connect(dest);
+  }
+
+  const stream = canvas.captureStream(30);
+  dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+  const mime = pickMime();
+  const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8_000_000 });
+  const chunks = [];
+  rec.ondataavailable = e => chunks.push(e.data);
+  const stopped = new Promise(r => rec.onstop = r);
+
+  function draw(t) {
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    let acc = 0, idx = project.scenes.length - 1, local = 0;
+    for (let i = 0; i < project.scenes.length; i++) {
+      const d = +project.scenes[i].duration || 3;
+      if (t < acc + d) { idx = i; local = t - acc; break; }
+      acc += d;
+    }
+    const s = project.scenes[idx];
+    drawCover(ctx, imgs[idx], W, H, 1.05 + 0.07 * (local / s.duration));   // Ken Burns
+    const g = ctx.createLinearGradient(0, H * .5, 0, H);
+    g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.88)");
+    ctx.fillStyle = g; ctx.fillRect(0, H * .5, W, H * .5);
+    ctx.fillStyle = "rgba(255,255,255,.25)"; ctx.fillRect(0, 0, W, 10);
+    ctx.fillStyle = "#ffd166"; ctx.fillRect(0, 0, W * (t / total), 10);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "rgba(255,255,255,.9)";
+    ctx.font = `600 ${W * .034}px system-ui, sans-serif`;
+    ctx.fillText(`${idx + 1} / ${project.scenes.length}`, W / 2, H * .055);
+    ctx.fillStyle = "#fff";
+    ctx.font = `800 ${W * .062}px system-ui, sans-serif`;
+    wrap(ctx, s.caption, W / 2, H * .84, W * .86, W * .082);
+    if (idx === project.scenes.length - 1) {
+      const txt = "🔗 Link in bio  •  #ad";
+      ctx.font = `700 ${W * .04}px system-ui`;
+      const w = ctx.measureText(txt).width + W * .07, h = W * .08;
+      ctx.fillStyle = "rgba(255,209,102,.96)";
+      ctx.beginPath(); ctx.roundRect((W - w) / 2, H * .70, w, h, h / 2); ctx.fill();
+      ctx.fillStyle = "#111"; ctx.textBaseline = "middle";
+      ctx.fillText(txt, W / 2, H * .70 + h / 2); ctx.textBaseline = "alphabetic";
+    }
+  }
+
+  rec.start(250); src && src.start();
+  const t0 = performance.now();
+  await new Promise(resolve => {
+    (function frame(now) {
+      const t = (now - t0) / 1000;
+      if (t >= total) { draw(total - .01); return resolve(); }
+      draw(t); onProgress && onProgress(t / total);
+      requestAnimationFrame(frame);
+    })(t0);
+  });
+  rec.stop(); await stopped;
+  stream.getTracks().forEach(t => t.stop());
+  mic && mic.getTracks().forEach(t => t.stop());
+  ac.close();
+  return new Blob(chunks, { type: mime || "video/webm" });
+}
+
+/* ─────────────────────── APP STATE + UI ─────────────────────── */
+const $ = s => document.querySelector(s);
+const newProject = () => ({ id: crypto.randomUUID(),
+  title: "Video " + new Date().toLocaleDateString(), scenes: [], script: "", videoUrl: "" });
+let user, cache = [], project = newProject(), lastBlob = null, lastURL = null;
+
+init();
+async function init() {
+  $("#status").textContent =
+    (HAS_FIREBASE ? "🔥 Firebase ✓" : "🔥 local-only (add config to save)") + "  ·  " +
+    (HAS_CLOUDINARY ? "☁️ Cloudinary ✓" : "☁️ local media (add config to host)");
+  user = await ensureAuth();
+  ["geminiKey", "openaiKey"].forEach(k => {
+    $("#" + k).value = localStorage.getItem(k) || "";
+    $("#" + k).oninput = e => localStorage.setItem(k, e.target.value);
+  });
+  bind(); loadProjects();
+  const fill = () => { $("#voice").innerHTML = speechSynthesis.getVoices()
+    .map(v => `<option value="${v.voiceURI}">${v.name} (${v.lang})</option>`).join(""); };
+  speechSynthesis.onvoiceschanged = fill; fill();
+}
+
+function bind() {
+  $("#tabs").onclick = e => { const b = e.target.closest("button"); if (!b) return;
+    document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+    for (let i = 0; i < 4; i++) $("#step-" + i).hidden = i !== +b.dataset.step; };
+
+  $("#fileInput").onchange = async e => {
+    for (const f of [...e.target.files]) {
+      const card = document.createElement("div");
+      card.className = "card"; card.innerHTML = `${f.name}<div class="bar"></div>`;
+      $("#uploads").appendChild(card);
+      try {
+        const r = await uploadMedia(f, p => card.querySelector(".bar").style.width = p * 100 + "%");
+        project.scenes.push({ url: r.secure_url, caption: defaultCaption(project.scenes.length), duration: 3 });
+      } catch (err) { alert("Upload failed: " + err.message); }
+      card.remove();
+    }
+    renderBoard();
+  };
+
+  $("#scenes").oninput = e => { const k = e.target.dataset.k; if (!k) return;
+    const s = project.scenes[e.target.closest(".scene").dataset.i];
+    s[k] = k === "duration" ? parseFloat(e.target.value) || 3 : e.target.value; };
+
+  $("#scenes").onclick = async e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const i = +e.target.closest(".scene").dataset.i, a = b.dataset.a, S = project.scenes;
+    if (a === "del") S.splice(i, 1);
+    if (a === "up" && i > 0) [S[i - 1], S[i]] = [S[i], S[i - 1]];
+    if (a === "down" && i < S.length - 1) [S[i + 1], S[i]] = [S[i], S[i + 1]];
+    if (a === "ai") { const key = $("#geminiKey").value.trim();
+      if (!key) return alert("Add your free Gemini key in step 3 first.");
+      b.disabled = true;
+      try { S[i].caption = await aiSceneCaption(key, S[i].url, $("#product").value); }
+      catch (err) { alert(err.message); }
+      b.disabled = false; }
+    renderBoard();
+  };
+
+  $("#autoDur").onclick = () => { project.scenes.forEach(s => s.duration = +estimateDuration(s.caption).toFixed(1)); renderBoard(); };
+  $("#buildScript").onclick = () => { $("#script").value = buildScript(project.scenes, $("#product").value); project.script = $("#script").value; };
+  $("#aiScriptBtn").onclick = async () => { const key = $("#geminiKey").value.trim();
+    if (!key) return alert("Gemini key needed.");
+    try { $("#script").value = await aiScript(key, project.scenes, $("#product").value); project.script = $("#script").value; }
+    catch (err) { alert(err.message); } };
+  $("#script").oninput = e => project.script = e.target.value;
+  $("#previewVoice").onclick = () => speak(project.script, { voiceURI: $("#voice").value, rate: +$("#rate").value });
+
+  $("#render").onclick = async () => {
+    if (!project.scenes.length) return alert("Add some pictures first.");
+    stopSpeaking();
+    const srcSel = $("#audioSource").value, key = $("#openaiKey").value.trim();
+    let audioBlob = null, useMic = false;
+    try {
+      if (srcSel === "tts") { if (!key) return alert("OpenAI key needed for TTS export (or use mic/file).");
+        audioBlob = await openaiTTS(project.script, key, $("#ttsVoice").value); }
+      if (srcSel === "file") { const f = $("#voiceFile").files[0]; if (!f) return alert("Pick an audio file."); audioBlob = f; }
+      if (srcSel === "mic") useMic = true;
+      $("#render").disabled = true;
+      lastBlob = await renderVideo(project, { aspect: $("#aspect").value, audioBlob, useMic,
+        onProgress: p => $("#progress").style.width = p * 100 + "%" });
+      if (lastURL) URL.revokeObjectURL(lastURL);
+      $("#preview").src = lastURL = URL.createObjectURL(lastBlob);
+      $("#uploadVideo").disabled = false;
+    } catch (err) { alert("Render failed: " + err.message); }
+    $("#render").disabled = false;
+  };
+
+  $("#uploadVideo").onclick = async () => {
+    if (!HAS_CLOUDINARY) return alert("Add your Cloudinary config to host the final video.");
+    const r = await uploadToCloudinary(new File([lastBlob], project.title + ".webm", { type: lastBlob.type }));
+    project.videoUrl = r.secure_url; save(); alert("☁️ Video hosted on Cloudinary!");
+  };
+
+  $("#save").onclick = save;
+  $("#projects").onchange = e => {
+    project = e.target.value === "new" ? newProject()
+      : structuredClone(cache.find(p => p.id === e.target.value));
+    syncUI();
+  };
+}
+
+function renderBoard() {
+  const w = $("#scenes"); w.innerHTML = "";
+  project.scenes.forEach((s, i) => {
+    const el = document.createElement("div");
+    el.className = "scene"; el.dataset.i = i;
+    el.innerHTML = `<img src="${s.url}" alt=""><textarea data-k="caption">${s.caption}</textarea>
+      <div class="row"><label>s <input type="number" min="1" max="15" step="0.5"
+      data-k="duration" value="${s.duration}" style="width:64px"></label>
+      <button data-a="ai" title="AI caption">✨</button><button data-a="up">↑</button>
+      <button data-a="down">↓</button><button data-a="del">✕</button></div>`;
+    w.appendChild(el);
+  });
+  $("#sceneCount").textContent = project.scenes.length + " scenes";
+}
+
+function syncUI() { $("#product").value = project.product || ""; $("#script").value = project.script || ""; renderBoard(); }
+
+function renderProjectsSelect() {
+  $("#projects").innerHTML = cache.map(p => `<option value="${p.id}">${p.title}</option>`).join("")
+    + `<option value="new">＋ New project</option>`;
+}
+
+async function save() {
+  project.product = $("#product").value; project.script = $("#script").value;
+  if (!HAS_FIREBASE) {
+    project.updatedAt = Date.now();
+    cache = [project, ...cache.filter(p => p.id !== project.id)];
+    localStorage.setItem("avs_projects", JSON.stringify(cache));
+    renderProjectsSelect(); return;
+  }
+  await setDoc(doc(db, "projects", project.id), { ...project, uid: user.uid, updatedAt: serverTimestamp() });
+  loadProjects();
+}
+
+async function loadProjects() {
+  if (!HAS_FIREBASE) {
+    try { cache = JSON.parse(localStorage.getItem("avs_projects") || "[]"); } catch { cache = []; }
+    cache.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    renderProjectsSelect(); return;
+  }
+  const snap = await getDocs(query(collection(db, "projects"), where("uid", "==", user.uid)));
+  cache = snap.docs.map(d => d.data()).sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+  renderProjectsSelect();
+}
+</script>
+</body>
+</html>
